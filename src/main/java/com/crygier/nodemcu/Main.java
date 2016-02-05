@@ -4,7 +4,11 @@ import com.crygier.nodemcu.emu.Gpio;
 import com.crygier.nodemcu.emu.Net;
 import com.crygier.nodemcu.emu.Timers;
 import com.crygier.nodemcu.emu.Wifi;
+import com.crygier.nodemcu.ui.MainController;
 import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaTable;
@@ -25,20 +29,31 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        // Load the FXML Stuff
+        FXMLLoader loader = new FXMLLoader();
+        Parent root = loader.load(getClass().getResource("/Main.fxml").openStream());
+        Scene scene = new Scene(root, 932, 662);
+        primaryStage.setTitle("NodeMCU Emulator");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+        primaryStage.setOnCloseRequest((windowEvent) -> System.exit(0));
+        MainController mainController = loader.getController();
+
         Globals globals = JsePlatform.debugGlobals();
         String initFile = "init.lua";
 
         globals.load(new Wifi());
         globals.load(new Timers());
-        globals.load(new Gpio());
+        globals.load(mainController.register(new Gpio()));
         globals.load(new Net());
 
         // JSON Module implemented in Lua - as it's rather difficult to convert from a LuaTable to Map and vice versa
-        LuaTable cjson = (LuaTable) processScript(Main.class.getResourceAsStream("/Json.lua"), "cjson.lua", globals);
+        LuaTable cjson = (LuaTable) processScript(getClass().getResourceAsStream("/Json.lua"), "cjson.lua", globals);
         globals.set("cjson", cjson);
 
         processScript(new FileInputStream(initFile), initFile, globals);
 
+        mainController.refreshUiWithPinState();
     }
 
     private static Varargs processScript(InputStream script, String chunkName, Globals globals) throws IOException {

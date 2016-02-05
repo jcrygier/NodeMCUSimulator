@@ -9,6 +9,7 @@ import org.luaj.vm2.lib.TwoArgFunction;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import static com.crygier.nodemcu.util.LuaFunctionUtil.*;
 
@@ -21,7 +22,11 @@ public class Gpio extends TwoArgFunction {
     public static final Integer PULLUP                      = 0;
     public static final Integer FLOAT                       = 1;
 
+    public static final Integer HIGH                        = 0;
+    public static final Integer LOW                         = 1;
+
     private Map<Integer, PinState> pinStates = new HashMap<>();
+    private Consumer<PinState> onChangeHandler;
 
     @Override
     public LuaValue call(LuaValue modname, LuaValue env) {
@@ -39,11 +44,17 @@ public class Gpio extends TwoArgFunction {
         gpio.set("INT", INT);
         gpio.set("PULLUP", PULLUP);
         gpio.set("FLOAT", FLOAT);
+        gpio.set("HIGH", HIGH);
+        gpio.set("LOW", LOW);
 
         env.set("gpio", gpio);
         env.get("package").get("loaded").set("gpio", gpio);
 
         return gpio;
+    }
+
+    public void setOnChangeHandler(Consumer<PinState> consumer) {
+        this.onChangeHandler = consumer;
     }
 
     private void setMode(Varargs args) {
@@ -77,17 +88,29 @@ public class Gpio extends TwoArgFunction {
     }
 
     private void write(LuaValue pin, LuaValue level) {
-        PinState pinState = getPinState(pin.toint());
+        setPinValue(pin.toint(), level.toint());
+    }
+
+    public void setPinValue(Integer pin, Integer level) {
+        PinState pinState = getPinState(pin);
         Integer previousLevel = pinState.level;
 
-        pinState.level = level.toint();
+        pinState.level = level;
 
-        if (pinState.trigCallback != null && !Objects.equals(previousLevel, pinState.level)) {
-            // TODO: Callback if proper
+        if (!Objects.equals(previousLevel, pinState.level)) {
+            if (pinState.trigCallback != null) {
+                if (pinState.level == 0 && ("down".equals(pinState.trigType) || "both".equals(pinState.trigType) || "low".equals(pinState.trigType)))
+                    pinState.trigCallback.call(LuaValue.valueOf(pinState.level));
+                else if (pinState.level == 1 && ("up".equals(pinState.trigType) || "both".equals(pinState.trigType) || "high".equals(pinState.trigType)))
+                    pinState.trigCallback.call(LuaValue.valueOf(pinState.level));
+            }
+
+            if (onChangeHandler != null)
+                onChangeHandler.accept(pinState);
         }
     }
 
-    private PinState getPinState(Integer pin) {
+    public PinState getPinState(Integer pin) {
         PinState pinState = pinStates.get(pin);
         if (pinState == null) {
             pinState = new PinState();
@@ -102,12 +125,12 @@ public class Gpio extends TwoArgFunction {
         return pinState;
     }
 
-    private static final class PinState {
-        Integer pin;
-        Integer mode;
-        Integer pullup;
-        Integer level;
-        String trigType;
+    public static final class PinState {
+        public Integer pin;
+        public Integer mode;
+        public Integer pullup;
+        public Integer level;
+        public String trigType;
         LuaClosure trigCallback;
     }
 }
