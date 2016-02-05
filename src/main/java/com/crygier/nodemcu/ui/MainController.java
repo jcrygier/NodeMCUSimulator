@@ -13,9 +13,6 @@ public class MainController {
     private Gpio gpio;
 
     @FXML private AnchorPane imageAnchorPane;
-    @FXML private Button d0;
-    @FXML private Button d1;
-    @FXML private Button d2;
 
     public Gpio register(Gpio gpio) {
         this.gpio = gpio;

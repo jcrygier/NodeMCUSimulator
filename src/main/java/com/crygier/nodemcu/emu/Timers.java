@@ -12,6 +12,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static com.crygier.nodemcu.util.LuaFunctionUtil.oneArgConsumer;
 import static com.crygier.nodemcu.util.LuaFunctionUtil.varargsFunction;
 
 public class Timers extends TwoArgFunction {
@@ -30,6 +31,9 @@ public class Timers extends TwoArgFunction {
 
         // Methods
         timers.set("alarm", varargsFunction(this::alarm));
+        timers.set("register", varargsFunction(this::register));
+        timers.set("unregister", oneArgConsumer(this::register));
+        timers.set("start", oneArgConsumer(this::register));
 
         // Constants
         timers.set("ALARM_SINGLE", ALARM_SINGLE);

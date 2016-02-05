@@ -33,7 +33,7 @@ public class Main extends Application {
         FXMLLoader loader = new FXMLLoader();
         Parent root = loader.load(getClass().getResource("/Main.fxml").openStream());
         Scene scene = new Scene(root, 932, 662);
-        primaryStage.setTitle("NodeMCU Emulator");
+        primaryStage.setTitle("NodeMCU Simulator");
         primaryStage.setScene(scene);
         primaryStage.show();
         primaryStage.setOnCloseRequest((windowEvent) -> System.exit(0));
