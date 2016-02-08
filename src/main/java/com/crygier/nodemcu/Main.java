@@ -1,9 +1,6 @@
 package com.crygier.nodemcu;
 
-import com.crygier.nodemcu.emu.Gpio;
-import com.crygier.nodemcu.emu.Net;
-import com.crygier.nodemcu.emu.Timers;
-import com.crygier.nodemcu.emu.Wifi;
+import com.crygier.nodemcu.emu.*;
 import com.crygier.nodemcu.ui.MainController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -46,6 +43,7 @@ public class Main extends Application {
         globals.load(new Timers());
         globals.load(mainController.register(new Gpio()));
         globals.load(new Net());
+        globals.load(new Mqtt());
 
         // JSON Module implemented in Lua - as it's rather difficult to convert from a LuaTable to Map and vice versa
         LuaTable cjson = (LuaTable) processScript(getClass().getResourceAsStream("/Json.lua"), "cjson.lua", globals);

@@ -70,11 +70,28 @@ public class LuaFunctionUtil {
         };
     }
 
+    public static ThreeArgFunction threeArgFunction(Function<Varargs, LuaValue> fun) {
+        return new ThreeArgFunction() {
+            @Override
+            public LuaValue call(LuaValue arg1, LuaValue arg2, LuaValue arg3) {
+                return CoerceJavaToLua.coerce(fun.apply(varargsOf(new LuaValue[] { arg1, arg2, arg3 })));
+            }
+        };
+    }
+
     public static VarArgFunction varargsFunction(Consumer<Varargs> fun) {
         return new VarArgFunction() {
             public Varargs invoke(Varargs varargs) {
                 fun.accept(varargs);
                 return NONE;
+            }
+        };
+    }
+
+    public static VarArgFunction varargsFunction(Function<Varargs, LuaValue> fun) {
+        return new VarArgFunction() {
+            public Varargs invoke(Varargs varargs) {
+                return fun.apply(varargs);
             }
         };
     }
