@@ -44,3 +44,10 @@ Json
 Fully implemented version (in Lua).  Easier to implement in lua (borrowed function), since there is no built in mechanism
 to Coerce a Lua Table to a Java Map.
 
+MQTT
+----
+
+MQTT Functionality is fully implemented except for LWT.  There is a sample that utilizes test.mosquitto.com to connect to.
+This is a free public test server that provides for simple testing.  See sample init.lua for examples.
+
+TODO: UI Implementation.  Would be nice to have a list of messages sent / received for debugging purposes.
