@@ -149,6 +149,10 @@ public class Mqtt extends TwoArgFunction {
 
             try {
                 clientStatus.client.publish(topic, payload.getBytes(), qos, retain);
+
+                if (callback != null)
+                    callback.call(self);
+
                 return true;
             } catch (MqttException e) {
                 e.printStackTrace();
