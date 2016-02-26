@@ -6,6 +6,10 @@
 -- Example file to test some of the functionality of the simulator
 --
 
+-- Simulate SPI (APA102)
+spi.setup(1, spi.MASTER, spi.CPOL_LOW, spi.CPHA_HIGH, 8, 1);
+
+
 -- Simulate Blinky LED
 local pinState = gpio.HIGH;
 gpio.write(0, pinState);
@@ -14,8 +18,14 @@ tmr.alarm(0, 1000, tmr.ALARM_AUTO, function()
 
     if (pinState == gpio.HIGH) then
         pinState = gpio.LOW;
+        spi.send(1, 0, 0, 0, 0);               -- APA102 Start Frame
+        spi.send(1, 255, 0, 0, 0);             -- APA102 Pixel 1 - Black
+        spi.send(1, 0, 0, 0, 0);               -- APA102 End Frame
     else
         pinState = gpio.HIGH;
+        spi.send(1, 0, 0, 0, 0);               -- APA102 Start Frame
+        spi.send(1, 255, 255, 255, 255);       -- APA102 Pixel 1 - Brightest White
+        spi.send(1, 0, 0, 0, 0);               -- APA102 End Frame
     end
 
     gpio.write(0, pinState);
