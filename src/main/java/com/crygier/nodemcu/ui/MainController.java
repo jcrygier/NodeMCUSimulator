@@ -1,5 +1,6 @@
 package com.crygier.nodemcu.ui;
 
+import com.crygier.nodemcu.emu.Apa102;
 import com.crygier.nodemcu.emu.Gpio;
 import com.crygier.nodemcu.emu.Spi;
 import javafx.application.Platform;
@@ -13,6 +14,7 @@ public class MainController {
 
     private Gpio gpio;
     private Spi spi;
+    private Apa102 apa;
 
     @FXML private AnchorPane imageAnchorPane;
 
@@ -27,6 +29,12 @@ public class MainController {
         this.spi = spi;
 
         return spi;
+    }
+
+    public Apa102 register(Apa102 apa) {
+        this.apa = apa;
+
+        return apa;
     }
 
     public void clickNodeMcu(MouseEvent event) {
@@ -68,7 +76,7 @@ public class MainController {
     }
 
     public void showAPA102Visualization(ActionEvent actionEvent) {
-        APA102Dialog dialog = new APA102Dialog(spi);
+        APA102Dialog dialog = new APA102Dialog(spi, apa);
         dialog.showAndWait();
     }
 

@@ -1,5 +1,6 @@
 package com.crygier.nodemcu.ui;
 
+import com.crygier.nodemcu.emu.Apa102;
 import com.crygier.nodemcu.emu.Spi;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
@@ -23,12 +24,15 @@ public class APA102Dialog extends Stage {
     public TextField numberOfPixels;
     public HBox pixelHolder;
     private Spi spi;
+    private Apa102 apa;
 
     private int currentPixelPointer = 0;
 
-    public APA102Dialog(Spi spi) {
+    public APA102Dialog(Spi spi, Apa102 apa) {
         this.spi = spi;
+        this.apa = apa;
         spi.setOnChangeHandler(this::spiChange);
+        apa.setOnChangeHandler(this::apaChange);
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/APA102.fxml"));
         loader.setController(this);
@@ -39,6 +43,22 @@ public class APA102Dialog extends Stage {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void apaChange(byte[] bytes) {
+        int ptr = 0;
+
+        currentPixelPointer = 0;
+        while (ptr < bytes.length) {
+            Integer b1 = (int) bytes[ptr++] + 224;
+            Integer b4 = (int) bytes[ptr++] & 0xFF;
+            Integer b3 = (int) bytes[ptr++] & 0xFF;
+            Integer b2 = (int) bytes[ptr++] & 0xFF;
+
+            if (isColorFrame(b1, b2, b3, b4))
+                handleColorFrame(b1, b2, b3, b4);
+        }
+        currentPixelPointer = 0;
     }
 
     private void spiChange(Spi.SpiSetup spiSetup, List<Integer> writtenBytes) {
@@ -64,7 +84,7 @@ public class APA102Dialog extends Stage {
         Integer brightness = b1 - 224;      // Peel off the 111 start frame
         Color c = Color.rgb(b2, b3, b4, brightness / 31);
 
-        if (pixelHolder.getChildren().size() > currentPixelPointer) {
+        if (pixelHolder != null && pixelHolder.getChildren() != null && pixelHolder.getChildren().size() > currentPixelPointer) {
             Circle pixel = (Circle) pixelHolder.getChildren().get(currentPixelPointer);
             pixel.setFill(c);
         }

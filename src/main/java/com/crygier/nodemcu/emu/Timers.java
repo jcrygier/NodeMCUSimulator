@@ -91,7 +91,11 @@ public class Timers extends TwoArgFunction {
             }, timerConfig.intervalMs, TimeUnit.MILLISECONDS);
         } else {
             scheduler.scheduleAtFixedRate(() -> {
-                timerConfig.callback.call();
+                try {
+                    timerConfig.callback.call();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }, timerConfig.intervalMs, timerConfig.intervalMs, TimeUnit.MILLISECONDS);
         }
 
