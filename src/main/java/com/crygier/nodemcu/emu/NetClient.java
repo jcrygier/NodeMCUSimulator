@@ -54,25 +54,7 @@ public class NetClient extends TwoArgFunction {
 
         try {
             ClientState state = clientStates.get(self);
-            state.socket = new Socket(server, port);
-            state.dataOutputStream = new DataOutputStream(state.socket.getOutputStream());
-
-            // Read from our socket
-            new Thread(() -> {
-                try {
-                    InputStream in = state.socket.getInputStream();
-                    byte[] buffer = new byte[1024];
-
-                    while (in.read(buffer) >= 0) {
-                        if (state.callbacks.containsKey("receive"))
-                            state.callbacks.get("receive").call(self, LuaValue.valueOf(buffer));
-                    }
-
-                    close(self);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }).start();
+            handleReceive(self, new Socket(server, port));
 
             if (state.callbacks.containsKey("connection"))
                 state.callbacks.get("connection").call(self);
@@ -81,10 +63,34 @@ public class NetClient extends TwoArgFunction {
         }
     }
 
+    public void handleReceive(LuaTable netClient, Socket socket) throws IOException {
+        ClientState state = clientStates.get(netClient);
+        final byte[] buffer = new byte[1024];
+
+        state.socket = socket;
+        state.dataOutputStream = new DataOutputStream(state.socket.getOutputStream());
+        final InputStream in = state.socket.getInputStream();
+
+        // Read from our socket
+        new Thread(() -> {
+            try {
+                while (in.read(buffer) >= 0) {
+                    if (state.callbacks.containsKey("receive"))
+                        state.callbacks.get("receive").call(netClient, LuaValue.valueOf(buffer));
+                }
+
+                close(netClient);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
+    }
+
     private void send(Varargs args) {
-        LuaTable self = (LuaTable) args.arg(2);
-        String text = args.arg(3).tojstring();
-        LuaClosure callback = (LuaClosure) args.arg(4);
+        int selfIdx = findSelfIdx(args);
+        LuaTable self = (LuaTable) args.arg(selfIdx);
+        String text = args.arg(selfIdx + 1).tojstring();
+        LuaClosure callback = args.arg(selfIdx + 2).isnil() ? null : (LuaClosure) args.arg(selfIdx + 2);
 
         try {
             ClientState state = clientStates.get(self);
@@ -114,6 +120,15 @@ public class NetClient extends TwoArgFunction {
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    private int findSelfIdx(Varargs args) {
+        for (int i = 1; i < args.narg(); i++) {
+            if (args.arg(i) instanceof LuaTable)
+                return i;
+        }
+
+        return -1;
     }
 
     private static final class ClientState {

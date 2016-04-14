@@ -46,4 +46,14 @@ m:connect("test.mosquitto.org", 1883, false, true, function(client)
     print("Connected");
 end)
 
+-- Simulate starting a server
+sv = net.createServer(net.TCP, 30)
+-- server listens on 8080, if data received, print data to console and send "hello world" back to caller
+sv:listen(8080, function(c)
+    c:on("receive", function(c, pl)
+        print(pl)
+    end)
+    c:send("hello world")
+end)
+
 print("Simulation Started");

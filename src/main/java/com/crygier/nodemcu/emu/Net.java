@@ -15,6 +15,7 @@ public class Net extends TwoArgFunction {
 
         // Methods
         net.set("createConnection", new NetClient());
+        net.set("createServer", new NetServer());
 
         // Constants
         net.set("TCP", TCP);
