@@ -1,8 +1,10 @@
 package com.crygier.nodemcu.emu;
 
 import com.crygier.nodemcu.util.LuaFunctionUtil;
+import org.luaj.vm2.LuaFunction;
 import org.luaj.vm2.LuaClosure;
 import org.luaj.vm2.LuaTable;
+import org.luaj.vm2.LuaNil;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.TwoArgFunction;
@@ -82,16 +84,16 @@ public class NetClient extends TwoArgFunction {
     }
 
     private void send(Varargs args) {
-        LuaTable self = (LuaTable) args.arg(2);
-        String text = args.arg(3).tojstring();
-        LuaClosure callback = (LuaClosure) args.arg(4);
+        LuaTable self = (LuaTable) args.arg(3);
+        String text = args.arg(4).tojstring();
+        LuaValue callback = (LuaValue) args.arg(5);
 
         try {
             ClientState state = clientStates.get(self);
             state.dataOutputStream.writeBytes(text);
 
-            if (callback != null)
-                callback.call(text);
+            if (!(callback instanceof LuaNil))
+                ((LuaFunction) callback).call(text);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
