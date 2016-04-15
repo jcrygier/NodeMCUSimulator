@@ -45,6 +45,7 @@ public class Main extends Application {
         globals.load(new Net());
         globals.load(new Mqtt());
         globals.load(mainController.register(new Spi()));
+        globals.load(mainController.register(new Apa102()));
 
         // JSON Module implemented in Lua - as it's rather difficult to convert from a LuaTable to Map and vice versa
         LuaTable cjson = (LuaTable) processScript(getClass().getResourceAsStream("/Json.lua"), "cjson.lua", globals);
