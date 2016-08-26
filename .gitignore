@@ -2,4 +2,5 @@
 *.iml
 lua/*
 build/
+classes/
 .gradle/

@@ -1,5 +1,7 @@
 package com.crygier.nodemcu.util;
 
+import com.crygier.nodemcu.lib.luaj.FiveArgFunction;
+import com.crygier.nodemcu.lib.luaj.FourArgFunction;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.*;
@@ -69,6 +71,27 @@ public class LuaFunctionUtil {
             }
         };
     }
+
+    public static FourArgFunction fourArgFunction(Consumer<Varargs> fun) {
+        return new FourArgFunction() {
+            @Override
+            public LuaValue call(LuaValue arg1, LuaValue arg2, LuaValue arg3, LuaValue arg4) {
+                fun.accept(varargsOf(new LuaValue[] { arg1, arg2, arg3, arg4 }));
+                return NONE;
+            }
+        };
+    }
+
+    public static FiveArgFunction fiveArgFunction(Consumer<Varargs> fun) {
+        return new FiveArgFunction() {
+            @Override
+            public LuaValue call(LuaValue arg1, LuaValue arg2, LuaValue arg3, LuaValue arg4, LuaValue arg5) {
+                fun.accept(varargsOf(new LuaValue[] { arg1, arg2, arg3, arg4, arg5 }));
+                return NONE;
+            }
+        };
+    }
+
 
     public static ThreeArgFunction threeArgFunction(Function<Varargs, LuaValue> fun) {
         return new ThreeArgFunction() {
