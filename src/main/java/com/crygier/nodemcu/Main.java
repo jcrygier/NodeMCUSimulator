@@ -39,6 +39,7 @@ public class Main extends Application {
         Globals globals = JsePlatform.debugGlobals();
         String initFile = "init.lua";
 
+        globals.load(new Http());
         globals.load(new Wifi());
         globals.load(new Timers());
         globals.load(mainController.register(new Gpio()));

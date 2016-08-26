@@ -8,6 +8,7 @@ repositories {
 dependencies {
     compile 'org.luaj:luaj-jse:3.0.1'
     compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.0.2'
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.2'
 }
 
 task wrapper(type: Wrapper) {
